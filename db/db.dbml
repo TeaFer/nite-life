@@ -41,7 +41,7 @@ Table ticket {
 }
 
 ref: ticket.ticket_type_id > ticket_type.id [delete: restrict, update: restrict]
-ref: ticket.buyer_id > ticket.user_id [delete: cascade, update: cascade]
+ref: ticket.owner_id > user.id [delete: cascade, update: cascade]
 
 //In case we add an extra role other than host and member
 // Table role {
