@@ -22,3 +22,7 @@ func (s *APIServer) Run() {
 	log.Println("JSON API server running on port:", s.listenAddr)
 	router.Run(s.listenAddr)
 }
+
+func JWTAuth(c *gin.Context) gin.HandlerFunc {
+
+}

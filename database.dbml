@@ -1,0 +1,64 @@
+Table user {
+  id integer [pk, increment]
+  username varchar(50) [not null, unique]
+  password varchar(128) [not null]
+  full_name varchar(255) [not null]
+  gender char(1) [not null]
+  is_host bool [default: false]
+  created_at timestamp [default: 'now()']
+}
+
+Table event {
+  id integer [pk, increment]
+  host_id integer [not null]
+  name integer [not null]
+  description varchar(1024)
+  capacity integer [not null]
+  start_at timestamp [not null]
+  end_at timestamp [not null]
+  created_at timestamp [default: 'now()']
+}
+
+ref: event.host_id > user.id
+
+Table ticket_type {
+  id integer [pk, increment]
+  event_id integer [not null]
+  name varchar(100) [not null]
+  description varchar(1024)
+  price decimal(16, 2) [not null]
+  total_quantity int [not null]
+  created_at timestamp [default: 'now()']
+}
+
+ref: ticket_type.event_id > event.id [delete: cascade, update: cascade]
+
+Table ticket {
+  id int [pk, increment]
+  ticket_type_id int [not null]
+  owner_id int [not null]
+  purchased_at timestamp [default: 'now()']
+}
+
+ref: ticket.ticket_type_id > ticket_type.id [delete: restrict, update: restrict]
+ref: ticket.buyer_id > ticket.user_id [delete: cascade, update: cascade]
+
+//In case we add an extra role other than host and member
+// Table role {
+//   id integer [pk, increment]
+//   role_name varchar(50) [not null, unique]
+// }
+
+// Table user_role {
+//   user_id integer
+//   role_id integer
+  
+//   indexes {
+//     (user_id, role_id) [pk]
+//   }
+// }
+
+// Ref: user_role.user_id > user.id [delete: cascade, update: cascade]
+// Ref: user_role.role_id > role.id [delete: cascade, update: cascade]
+
+
