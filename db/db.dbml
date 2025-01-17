@@ -1,7 +1,8 @@
-Table user {
+Table account {
   id integer [pk, increment]
   username varchar(50) [not null, unique]
   password varchar(128) [not null]
+  display_name varchar(50) [not null]
   full_name varchar(255) [not null]
   gender char(1) [not null]
   is_host bool [default: false]
@@ -19,7 +20,7 @@ Table event {
   created_at timestamp [default: 'now()']
 }
 
-ref: event.host_id > user.id
+ref: event.host_id > account.id
 
 Table ticket_type {
   id integer [pk, increment]
@@ -41,7 +42,7 @@ Table ticket {
 }
 
 ref: ticket.ticket_type_id > ticket_type.id [delete: restrict, update: restrict]
-ref: ticket.owner_id > user.id [delete: cascade, update: cascade]
+ref: ticket.owner_id > account.id [delete: cascade, update: cascade]
 
 //In case we add an extra role other than host and member
 // Table role {
