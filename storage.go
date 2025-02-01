@@ -112,6 +112,7 @@ func scanIntoAccount(rows *sql.Rows) (*Account, error) {
 		&account.ID,
 		&account.Username,
 		&account.Password,
+		&account.DisplayName,
 		&account.FullName,
 		&account.Gender,
 		&account.IsHost,

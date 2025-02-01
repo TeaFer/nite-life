@@ -17,7 +17,8 @@ type APIServer struct {
 type apiFunc func(*gin.Context) error
 
 type apiError struct {
-	Error string `json:"error"`
+	Error   string `json:"error"`
+	Message string `json:"message"`
 }
 
 func NewAPIServer(listenAddr string, store Storage) *APIServer {
@@ -42,7 +43,11 @@ func makeHandlerFunc(f apiFunc) gin.HandlerFunc {
 		err := f(c)
 		if err != nil {
 			c.Error(err)
-			c.JSON(http.StatusBadRequest, apiError{Error: err.Error()})
+			c.JSON(http.StatusBadRequest,
+				apiError{
+					Error:   "Bad request. Please try again",
+					Message: err.Error(),
+				})
 		}
 	}
 }
