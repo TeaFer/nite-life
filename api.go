@@ -17,7 +17,7 @@ type APIServer struct {
 type apiFunc func(*gin.Context) error
 
 type apiError struct {
-	Error string `json:error`
+	Error string `json:"error"`
 }
 
 func NewAPIServer(listenAddr string, store Storage) *APIServer {
@@ -73,6 +73,7 @@ func (s *APIServer) handleCreateAccount(c *gin.Context) error {
 	Account := NewAccount(
 		createAccountReq.Username,
 		createAccountReq.Password,
+		createAccountReq.DisplayName,
 		createAccountReq.FullName,
 		createAccountReq.Gender, createAccountReq.IsHost)
 	err := s.store.CreateAccount(Account)
