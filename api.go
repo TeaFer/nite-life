@@ -45,7 +45,7 @@ func makeHandlerFunc(f apiFunc) gin.HandlerFunc {
 			c.Error(err)
 			c.JSON(http.StatusBadRequest,
 				apiError{
-					Error:   "Bad request. Please try again",
+					Error:   "Bad request. Please try again.",
 					Message: err.Error(),
 				})
 		}

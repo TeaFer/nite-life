@@ -12,11 +12,17 @@ Table account {
 Table event {
   id integer [pk, increment]
   host_id integer [not null]
-  name integer [not null]
+  name integer [not null, unique]
   description varchar(1024)
   capacity integer [not null]
   start_at timestamp [not null]
   end_at timestamp [not null]
+  location_name varchar(255),
+  location_address varchar(255) [not null],
+  location_city varchar(100) [not null],
+  location_state varchar(100) [not null],
+  location_country varchar(100) [not null],
+  location_zip varchar(20),
   created_at timestamp [default: 'now()']
 }
 
