@@ -91,6 +91,7 @@ func (s *APIServer) handleEventById(c *gin.Context) error {
 	case "GET":
 		return s.handleGetEventById(c)
 	}
+	return nil
 }
 
 func (s *APIServer) handleGetAccount(c *gin.Context) error {

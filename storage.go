@@ -16,6 +16,7 @@ type Storage interface {
 	GetAccountById(int) (*Account, error)
 	GetEvent() ([]*Event, error)
 	CreateEvent(*Event) error
+	GetEventById(int) (*Event, error)
 }
 
 type PostgresStore struct {
