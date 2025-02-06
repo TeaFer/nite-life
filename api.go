@@ -33,6 +33,8 @@ func (s *APIServer) Run() {
 
 	router.Any("/accounts", makeHandlerFunc(s.handleAccount))
 	router.Any("/accounts/:id", makeHandlerFunc(s.handleAccountById))
+	router.Any("/accounts/:id/tickets", makeHandlerFunc(s.handleGetTicketsByAccountId))
+
 	router.Any("/events", makeHandlerFunc(s.handleEvent))
 	router.Any("/events/:id", makeHandlerFunc(s.handleEventById))
 
@@ -122,10 +124,9 @@ func (s *APIServer) handleCreateAccount(c *gin.Context) error {
 }
 
 func (s *APIServer) handleGetAccountById(c *gin.Context) error {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+	id, err := getID(c)
 	if err != nil {
-		return fmt.Errorf("invalid id provided: %s", idStr)
+		return err
 	}
 
 	account, err := s.store.GetAccountById(id)
@@ -138,15 +139,29 @@ func (s *APIServer) handleGetAccountById(c *gin.Context) error {
 }
 
 func (s *APIServer) handleDeleteAccountById(c *gin.Context) error {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+	id, err := getID(c)
 	if err != nil {
-		return fmt.Errorf("invalid id provided: %s", idStr)
+		return err
 	}
 	if err := s.store.DeleteAccountById(id); err != nil {
 		return err
 	}
 	c.Status(200)
+	return nil
+}
+
+func (s *APIServer) handleGetTicketsByAccountId(c *gin.Context) error {
+	id, err := getID(c)
+	if err != nil {
+		return err
+	}
+
+	tickets, err := s.store.GetTicketsByAccountId(id)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, tickets)
 	return nil
 }
 
@@ -185,10 +200,9 @@ func (s *APIServer) handleCreateEvent(c *gin.Context) error {
 }
 
 func (s *APIServer) handleGetEventById(c *gin.Context) error {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+	id, err := getID(c)
 	if err != nil {
-		return fmt.Errorf("invalid id provided: %s", idStr)
+		return err
 	}
 
 	event, err := s.store.GetEventById(id)
@@ -198,4 +212,14 @@ func (s *APIServer) handleGetEventById(c *gin.Context) error {
 
 	c.JSON(http.StatusOK, event)
 	return nil
+}
+
+func getID(c *gin.Context) (int, error) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return 0, fmt.Errorf("invalid id provided: %s", idStr)
+	}
+	return id, nil
+
 }
