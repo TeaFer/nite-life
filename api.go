@@ -31,8 +31,9 @@ func NewAPIServer(listenAddr string, store Storage) *APIServer {
 func (s *APIServer) Run() {
 	router := gin.Default()
 
-	router.Any("/account", makeHandlerFunc(s.handleAccount))
-	router.Any("/account/:id", makeHandlerFunc(s.handleAccountById))
+	router.Any("/accounts", makeHandlerFunc(s.handleAccount))
+	router.Any("/accounts/:id", makeHandlerFunc(s.handleAccountById))
+	router.Any("/events", makeHandlerFunc(s.handleEvent))
 
 	log.Println("JSON API server running on port:", s.listenAddr)
 	router.Run(s.listenAddr)
@@ -61,6 +62,16 @@ func (s *APIServer) handleAccount(c *gin.Context) error {
 	default:
 		return fmt.Errorf("method not supported: %s", c.Request.Method)
 	}
+}
+
+func (s *APIServer) handleEvent(c *gin.Context) error {
+	switch c.Request.Method {
+	case "GET":
+		return s.handleGetEvent(c)
+	case "POST":
+		return s.handleCreateEvent(c)
+	}
+	return nil
 }
 
 func (s *APIServer) handleGetAccount(c *gin.Context) error {
@@ -127,5 +138,39 @@ func (s *APIServer) handleDeleteAccountById(c *gin.Context) error {
 		return err
 	}
 	c.Status(200)
+	return nil
+}
+
+func (s *APIServer) handleGetEvent(c *gin.Context) error {
+	events, err := s.store.GetEvent()
+	if err != nil {
+		return err
+	}
+	c.JSON(200, events)
+	return nil
+}
+
+func (s *APIServer) handleCreateEvent(c *gin.Context) error {
+	createEventReq := new(CreateEventRequest)
+	c.BindJSON(createEventReq)
+	Event := NewEvent(
+		createEventReq.HostID,
+		createEventReq.Name,
+		createEventReq.Description,
+		createEventReq.Capacity,
+		createEventReq.StartAt,
+		createEventReq.EndAt,
+		createEventReq.LocationName,
+		createEventReq.LocationAddress,
+		createEventReq.LocationCity,
+		createEventReq.LocationState,
+		createEventReq.LocationCountry,
+		createEventReq.LocationZip)
+	err := s.store.CreateEvent(Event)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusCreated, Event)
 	return nil
 }

@@ -11,6 +11,21 @@ type CreateAccountRequest struct {
 	IsHost      bool   `json:"is_host"`
 }
 
+type CreateEventRequest struct {
+	HostID          int       `json:"host_id"`
+	Name            string    `json:"name"`
+	Description     string    `json:"description"`
+	Capacity        int       `json:"capacity"`
+	StartAt         time.Time `json:"start_at"`
+	EndAt           time.Time `json:"end_at"`
+	LocationName    string    `json:"location_name"`
+	LocationAddress string    `json:"location_address"`
+	LocationCity    string    `json:"location_city"`
+	LocationState   string    `json:"location_state"`
+	LocationCountry string    `json:"location_country"`
+	LocationZip     string    `json:"location_zip"`
+}
+
 type Account struct {
 	ID          int       `json:"id"`
 	Username    string    `json:"username"`
@@ -77,6 +92,26 @@ type Participant struct {
 	TicketTypeID    int       `json:"ticket_type_id"`
 	TicketTypeName  string    `json:"ticket_type_name"`
 	TicketTypePrice float32   `json:"ticket_type_price"`
+}
+
+func NewEvent(hostId int, name string, description string, capacity int, startAt time.Time,
+	endAt time.Time, locationName string, locationAddress string, locationCity string,
+	locationState string, locationCountry string, locationZip string) *Event {
+	return &Event{
+		HostID:          hostId,
+		Name:            name,
+		Description:     description,
+		Capacity:        capacity,
+		StartAt:         startAt,
+		EndAt:           endAt,
+		LocationName:    locationName,
+		LocationAddress: locationAddress,
+		LocationCity:    locationCity,
+		LocationState:   locationState,
+		LocationCountry: locationCountry,
+		LocationZip:     locationZip,
+		CreatedAt:       time.Now(),
+	}
 }
 
 func NewAccount(username string, password string, displayName string,

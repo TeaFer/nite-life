@@ -14,6 +14,8 @@ type Storage interface {
 	GetAccount() ([]*Account, error)
 	DeleteAccountById(int) error
 	GetAccountById(int) (*Account, error)
+	GetEvent() ([]*Event, error)
+	CreateEvent(*Event) error
 }
 
 type PostgresStore struct {
@@ -94,7 +96,8 @@ func (s *PostgresStore) DeleteAccountById(id int) error {
 }
 
 func (s *PostgresStore) GetAccountById(id int) (*Account, error) {
-	rows, err := s.db.Query("SELECT id, username, display_name, full_name, gender, is_host, created_at FROM account WHERE id = $1", id)
+	rows, err := s.db.Query(`SELECT id, username, display_name, full_name, gender, 
+	is_host, created_at FROM account WHERE id = $1`, id)
 	if err != nil {
 		return nil, err
 	}
@@ -104,6 +107,80 @@ func (s *PostgresStore) GetAccountById(id int) (*Account, error) {
 	}
 
 	return nil, fmt.Errorf("Account %d not found", id)
+}
+
+func (s *PostgresStore) GetEvent() ([]*Event, error) {
+	query := `SELECT id, host_id, name, description, capacity, 
+	start_at, end_at, location_name, location_address, location_city, 
+	location_state, location_zip, created_at
+	FROM event`
+
+	rows, err := s.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	events := []*Event{}
+	for rows.Next() {
+		event, err := scanIntoEvent(rows)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, event)
+	}
+	return events, nil
+}
+
+func (s *PostgresStore) CreateEvent(event *Event) error {
+	query := `INSERT INTO event
+	(host_id, name, description, capacity, start_at, end_at, 
+	location_name, location_address, location_city, location_state,
+	location_country, location_zip, created_at)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`
+
+	_, err := s.db.Query(
+		query,
+		event.HostID,
+		event.Name,
+		event.Description,
+		event.Capacity,
+		event.StartAt,
+		event.EndAt,
+		event.LocationName,
+		event.LocationAddress,
+		event.LocationCity,
+		event.LocationState,
+		event.LocationCountry,
+		event.LocationZip,
+		event.CreatedAt)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func scanIntoEvent(rows *sql.Rows) (*Event, error) {
+	event := new(Event)
+	err := rows.Scan(
+		&event.ID,
+		&event.HostID,
+		&event.Name,
+		&event.Description,
+		&event.Capacity,
+		&event.StartAt,
+		&event.EndAt,
+		&event.LocationName,
+		&event.LocationAddress,
+		&event.LocationCity,
+		&event.LocationState,
+		&event.LocationCountry,
+		&event.LocationZip,
+		&event.CreatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return event, nil
 }
 
 func scanIntoAccount(rows *sql.Rows) (*Account, error) {
