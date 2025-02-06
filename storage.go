@@ -158,6 +158,23 @@ func (s *PostgresStore) CreateEvent(event *Event) error {
 	return nil
 }
 
+func (s *PostgresStore) GetEventById(id int) (*Event, error) {
+	query := `SELECT id, host_id, name, description, capacity, 
+	start_at, end_at, location_name, location_address, location_city, 
+	location_state, location_zip, created_at
+	FROM event`
+
+	rows, err := s.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		return scanIntoEvent(rows)
+	}
+
+	return nil, fmt.Errorf("Event %d not found", id)
+}
+
 func scanIntoEvent(rows *sql.Rows) (*Event, error) {
 	event := new(Event)
 	err := rows.Scan(

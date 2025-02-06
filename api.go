@@ -34,6 +34,7 @@ func (s *APIServer) Run() {
 	router.Any("/accounts", makeHandlerFunc(s.handleAccount))
 	router.Any("/accounts/:id", makeHandlerFunc(s.handleAccountById))
 	router.Any("/events", makeHandlerFunc(s.handleEvent))
+	router.Any("/events/:id", makeHandlerFunc(s.handleEventById))
 
 	log.Println("JSON API server running on port:", s.listenAddr)
 	router.Run(s.listenAddr)
@@ -64,6 +65,17 @@ func (s *APIServer) handleAccount(c *gin.Context) error {
 	}
 }
 
+func (s *APIServer) handleAccountById(c *gin.Context) error {
+	switch c.Request.Method {
+	case "GET":
+		return s.handleGetAccountById(c)
+	case "DELETE":
+		return s.handleDeleteAccountById(c)
+	default:
+		return fmt.Errorf("method not supported: %s", c.Request.Method)
+	}
+}
+
 func (s *APIServer) handleEvent(c *gin.Context) error {
 	switch c.Request.Method {
 	case "GET":
@@ -72,6 +84,13 @@ func (s *APIServer) handleEvent(c *gin.Context) error {
 		return s.handleCreateEvent(c)
 	}
 	return nil
+}
+
+func (s *APIServer) handleEventById(c *gin.Context) error {
+	switch c.Request.Method {
+	case "GET":
+		return s.handleGetEventById(c)
+	}
 }
 
 func (s *APIServer) handleGetAccount(c *gin.Context) error {
@@ -99,17 +118,6 @@ func (s *APIServer) handleCreateAccount(c *gin.Context) error {
 
 	c.JSON(http.StatusCreated, Account)
 	return nil
-}
-
-func (s *APIServer) handleAccountById(c *gin.Context) error {
-	switch c.Request.Method {
-	case "GET":
-		return s.handleGetAccountById(c)
-	case "DELETE":
-		return s.handleDeleteAccountById(c)
-	default:
-		return fmt.Errorf("method not supported: %s", c.Request.Method)
-	}
 }
 
 func (s *APIServer) handleGetAccountById(c *gin.Context) error {
@@ -172,5 +180,21 @@ func (s *APIServer) handleCreateEvent(c *gin.Context) error {
 	}
 
 	c.JSON(http.StatusCreated, Event)
+	return nil
+}
+
+func (s *APIServer) handleGetEventById(c *gin.Context) error {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return fmt.Errorf("invalid id provided: %s", idStr)
+	}
+
+	event, err := s.store.GetEventById(id)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, event)
 	return nil
 }
