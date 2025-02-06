@@ -210,18 +210,27 @@ paths:
                 location_name:
                   type: string
                   description: "Specific name of the event venue. This could be an empty string, which means the event venue has no specified name"
+                  example: "Stamp Union"
                 location_address:
                   type: string
                   description: "Street address of the event venue."
+                  example: "2222 Tesseract Ave"
                 location_city:
                   type: string
                   description: "City where the event is held."
+                  example: "College Park"
                 location_state:
                   type: string
                   description: "State/province where the event is held."
+                  example: "Maryland"
+                location_country:
+                  type: string
+                  description: "Country where the event is held."
+                  example: "United States of America"
                 location_zip:
                   type: string
                   description: "Zipcode of where the event is held"
+                  example: "99002-1223"
       responses:
         201:
           description: "Successful Response."
@@ -517,21 +526,27 @@ components:
         location_name:
           type: string
           description: "Specific name of the event venue. This could be an empty string, which means the event venue has no specified name"
+          example: "Stamp Union"
         location_address:
           type: string
           description: "Street address of the event venue."
+          example: "2222 Tesseract Ave"
         location_city:
           type: string
           description: "City where the event is held."
+          example: "College Park"
         location_state:
           type: string
           description: "State/province where the event is held."
+          example: "Maryland"
         location_zip:
           type: string
           description: "Zipcode of where the event is held"
+          example: "98002-1112"
         created_at:
           type: string
           description: "Date/time of when the event was created by the host in (what time zone?)."
+          example: "TODO"
     ticket:
       type: object
       description: "Represents a ticket to an event owned by a user."
@@ -639,14 +654,14 @@ components:
           description: "id of the ticket instance that the user possesses."
           example: 30
           type: integer
-        ticket_type_id:
-          description: "id of the ticket type that the user has."
-          example: 10
-          type: integer
         purchased_at:
           description: "date/time when the ticket was purchased."
           example: "TODO"
           type: string
+        ticket_type_id:
+          description: "id of the ticket type that the user has."
+          example: 10
+          type: integer
         ticket_type_name:
           description: "Name of the ticket"
           example: "VIP"
@@ -655,8 +670,6 @@ components:
           description: "Price of the ticket."
           example: "499.99"
           type: string
-        
-        
     error:
       type: object
       description: "Response when request fails. The error field is to be used as a template message to display to users, while the messsage field is for debugging."
