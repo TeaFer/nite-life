@@ -1,0 +1,687 @@
+openapi: "3.0.3"
+info:
+  title: NiteLife API
+  description: "This API provides an interface for managing events, ticket purchases, users and authentication."
+  version: '1.0'
+paths: 
+  /accounts:
+    get:
+      tags:
+      - Accounts
+      summary: "Get accounts"
+      description: "retrieve all accounts from the database as per the filters and sorting criterias provided. Like all other paths that return an array, an **empty array** represents that a successful request that had no query results."
+      parameters:
+        - $ref: '#/components/parameters/filter'
+        - $ref: '#/components/parameters/sort'
+      responses:
+        200:
+          description: Successful Response.
+          content:
+            application/json:
+              schema:
+                title: Accounts
+                type: array
+                items:
+                  $ref: '#/components/schemas/account'
+        400:
+          description: Request Failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+    post:
+      tags:
+      - Accounts
+      summary: "Create a new account"
+      description: "Creates a new account with the given inputs"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "dima333"
+                password:
+                  type: string
+                  example: "12345678"
+                display_name:
+                  type: string
+                  example: "olgaLibber"
+                full_name:
+                  type: string
+                  example: "Perry Platypus"
+                gender:
+                  type: string
+                  enum: [m, f, o]
+                  description: "The gender of the user. m = male, f = female, o = other"
+                is_host:
+                  type: boolean
+      responses:
+        201:
+          description: "Successful Response"
+        400:
+          description: "Bad Request. Account was not created"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /accounts/{id}:
+    get:
+      tags:
+      - Accounts
+      summary: "Get an account by id"
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: the id of the user to get
+      responses:
+        200:
+          description: Successful Response.
+          content:
+            application/json:
+              schema:
+                title: Accounts
+                type: array
+                items:
+                  $ref: '#/components/schemas/account'
+        400:
+          description: Request Failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+    delete:
+      tags:
+      - Accounts
+      summary: "Remove an account by id"
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: the id of the user to remove
+      responses:
+        200:
+          description: Successful Response.
+        400:
+          description: Request Failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /accounts/{id}/tickets:
+    get:
+      tags:
+      - Accounts
+      summary: "Get the tickets that the user with the given id owns."
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: the id of the user
+      responses:
+        200:
+          description: Successful Response.
+          content:
+            application/json:
+              schema:
+                title: Tickets
+                type: array
+                items:
+                  $ref: '#/components/schemas/ticket'
+        400:
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /events:
+    get:
+      tags:
+      - Events
+      summary: "Get events"
+      parameters:
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/sort'
+      - in: query
+        name: timezone
+        schema:
+          type: integer
+        required: false
+        description: "the timezone that the date/times of events should be returned as. Timezone should be given as a TZ identifier as per the IANA time zone data. All possible values can be found under the TZ identifier column in https://en.wikipedia.org/wiki/List_of_tz_database_time_zones. **Default**: UTC time."
+        example: "America/New_York"
+      responses:
+        200:
+          description: Successful Response.
+          content:
+            application/json:
+              schema:
+                title: Events
+                type: array
+                items:
+                  $ref: '#/components/schemas/event'
+        400:
+          description: Request Failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+    post:
+      tags:
+      - Events
+      summary: "Create a new event"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                host_id:
+                  type: integer
+                  example: 134
+                  description: "account id of the event host"
+                name:
+                  type: string
+                  example: "Platypus Appreciation Rave"
+                  description: "Name of the event"
+                description:
+                  type: string
+                  example: "The Platypus Society is bringing you the Platypus Appreciation Rave. This rave will commemorate the 100th year of the Platypus dictatorship. NO SAPIENS ALLOWED"
+                capacity:
+                  type: integer
+                  description: "Max capacity of the event."
+                  example: 2000
+                start_at:
+                  type: string
+                  description: "Start date/time of the event in the given time zone. Format is yyyy-mm-dd hh:mm:ss"
+                  example: "2025-03-30 10:00:00"
+                end_at:
+                  type: string
+                  description: "End date/time of the event in the given time zone. Format is yyyy-mm-dd hh:mm:ss"
+                  example: "2025-03-30 21:00:00"
+                location_name:
+                  type: string
+                  description: "Specific name of the event venue. This could be an empty string, which means the event venue has no specified name"
+                location_address:
+                  type: string
+                  description: "Street address of the event venue."
+                location_city:
+                  type: string
+                  description: "City where the event is held."
+                location_state:
+                  type: string
+                  description: "State/province where the event is held."
+                location_zip:
+                  type: string
+                  description: "Zipcode of where the event is held"
+      responses:
+        201:
+          description: "Successful Response."
+        400:
+          description: "Bad Request. Event was not created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  /events/{id}:
+    get:
+      tags:
+      - Events
+      summary: "Get event by id"
+      description: "Get the event with the given ID. Note that an error response will be returned if an event with the given ID does not exist."
+      parameters:
+        - in: path
+          name: id
+          description: "id of the event."
+          schema:
+            type: integer
+          required: true
+          example: 100
+      responses:
+        200:
+          description: "Successful Response."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/event"
+        400:
+          description: "Bad Request."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  /events/{id}/ticket_types:
+    get:
+      tags:
+      - Events
+      summary: "Get ticket types of the event with the given event id"
+      description: "Returns all ticket types for the event with the provided event id. Like all other paths that return arrays, an empty array response means that the event with the given id exists, but does not have any ticket types associated with it. In contrast, if the given id does not correspond to an existing event, a 404 error will be returned."
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: "id of the event."
+          example: 100
+      responses:
+        200:
+          description: "Successful Response."
+          content:
+            application/json:
+              schema:
+                title: TicketTypes
+                type: array
+                items:
+                  $ref: "#/components/schemas/ticket_type"
+        400:
+          description: "Bad Request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        404:
+          description: "Event not found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /events/{id}/participants:
+    get:
+      tags:
+      - Events
+      summary: "Get the participants of the event with the given event id"
+      description: "Returns all participants for the event with the provided event id. Like all other paths that return arrays, an empty array response means that the event with the given id exists, but does not have any participants. In contrast, if the given id does not correspond to an existing event, a 404 error will be returned."
+      parameters:
+        - in: path
+          name: id
+          description: "id of the event."
+          schema:
+            type: integer
+          example: 100
+          required: true
+      responses:
+        200:
+          description: "Successful response."
+          content:
+            application/json:
+              schema:
+                title: Participants
+                type: array
+                items:
+                  $ref: '#/components/schemas/participant'
+  /tickets:
+    get:
+      tags:
+      - Tickets
+      summary: "Get tickets."
+      responses:
+        200:
+          description: "Successful Response."
+          content:
+            application/json:
+              schema:
+                title: Tickets
+                type: array
+                items:
+                  $ref: '#/components/schemas/ticket'
+        400:
+          description: "Bad Request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+      - Tickets
+      summary: "Create a new ticket."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticket_type_id:
+                  type: integer
+                  description: "id of the ticket type of the ticket."
+                  example: 10
+                owner_id:
+                  type: integer
+                  example: 32
+                  description: "id of the owner of the ticket."
+      responses:
+        201:
+          description: "Successful Response."
+        400:
+          description: "Bad Request. Ticket was not created"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /tickets/{id}:
+    get:
+      tags:
+      - Tickets
+      summary: "Get a ticket by id."
+      description: "Gets a ticket of the given id. If a ticket with the given id does not exist, it will return an error response."
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+            example: 200
+          description: "The id of the ticket"
+          required: true
+      responses:
+        200:
+          description: "Successful Response."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ticket'
+        400:
+          description: "Bad Request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /ticket_types:
+    get:
+      tags:
+      - Tickets
+      summary: "Retrieve all ticket_types."
+      description: "Retrieve all ticket types that fulfill the filtering and returned in the given sort order."
+      parameters:
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/sort'
+      responses:
+        200:
+          description: "Successful response."
+          content:
+            application/json:
+              schema:
+                title: ticket_types
+                type: array
+                items:
+                  $ref: '#/components/schemas/ticket_type'
+        400:
+          description: "Bad Request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+      - Tickets
+      summary: "Create a new ticket type"
+      description: "Create a new ticket type for a specific event."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "Represents a specific type of a ticket for an event. For example, an event could offer regular, VIP, and VVIP tickets with different perks."
+              properties:
+                event_id:
+                  type: integer
+                  example: 100
+                  description: "Id of the event that this ticket type is for."
+                name:
+                  type: string
+                  example: "VIP"
+                  description: "Name of the ticket type."
+                description:
+                  type: string
+                  example: "You're a superstar with this ticket. Come dance with the platypus at the after party"
+                  description: "A description of the ticket type. This should be where the perks of a ticket type are listed out."
+                price:
+                  type: string
+                  example: "499.99"
+                  description: "Price of this ticket type."
+                total_quantity:
+                  type: integer
+                  example: 500
+                  description: "Total quantity of this ticket type available. The total quantities of all ticket types of an event is at most the total capacity of the event."
+      responses:
+        201:
+          description: "Successful response."
+        400:
+          description: "Bad request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+          
+components:
+  schemas:
+    account:
+      description: "Represents a NiteLife user."
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 4444
+        username:
+          type: string
+          example: "dima333"
+        display_name:
+          type: string
+          example: "olgaLibber"
+        full_name:
+          type: string
+          example: "Perry Platypus"
+        gender:
+          type: string
+          enum: [m, f, o]
+          description: "The gender of the user. m = male, f = female, o = other"
+        is_host:
+          type: boolean
+    event:
+      description: "Represents a NiteLife event."
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3333
+        host_id:
+          type: integer
+          example: 134
+          description: "account id of the event host"
+        name:
+          type: string
+          example: "Platypus Appreciation Rave"
+          description: "Name of the event"
+        description:
+          type: string
+          example: "The Platypus Society is bringing you the Platypus Appreciation Rave. This rave will commemorate the 100th year of the Platypus dictatorship. NO SAPIENS ALLOWED"
+        capacity:
+          type: integer
+          description: "Max capacity of the event."
+          example: 2000
+        start_at:
+          type: string
+          description: "Start date/time of the event in the given time zone. Format is yyyy-mm-dd hh:mm:ss"
+          example: "2025-03-30 10:00:00"
+        end_at:
+          type: string
+          description: "End date/time of the event in the given time zone. Format is yyyy-mm-dd hh:mm:ss"
+          example: "2025-03-30 21:00:00"
+        location_name:
+          type: string
+          description: "Specific name of the event venue. This could be an empty string, which means the event venue has no specified name"
+        location_address:
+          type: string
+          description: "Street address of the event venue."
+        location_city:
+          type: string
+          description: "City where the event is held."
+        location_state:
+          type: string
+          description: "State/province where the event is held."
+        location_zip:
+          type: string
+          description: "Zipcode of where the event is held"
+        created_at:
+          type: string
+          description: "Date/time of when the event was created by the host in (what time zone?)."
+    ticket:
+      type: object
+      description: "Represents a ticket to an event owned by a user."
+      properties:
+        id:
+          type: integer
+          example: 1233
+          description: "Unique identifier of the ticket"
+        ticket_type_id:
+          type: integer
+          example: 200
+          description: "id of the ticket type of the ticket"
+        owner_id:
+          type: integer
+          example: 32
+          description: "id of the owner of the ticket"
+        purchased_at:
+          type: string
+          description: "date/time of when the ticket was purchased"
+        ticket_type_name:
+          type: string
+          example: "VIP"
+          description: "Name of the ticket type of the ticket"
+        ticket_type_price:
+          type: string
+          example: "300.22"
+          description: "Floating-point price of the ticket type of the ticket."
+        event_id:
+          type: integer
+          example: 100
+          description: "id of the event that the ticket is for"
+        event_name:
+          type: string
+          example: "Platypus Coffee Talk"
+          description: "name of the event that the ticket is for"
+        event_start_at:
+          type: string
+          example: "TODO"
+          description: "date/time of when the event starts."
+        event_end_at:
+          type: string
+          example: "TODO"
+          description: "date/time of when the event ends."
+    ticket_type:
+      type: object
+      description: "Represents a specific type of a ticket for an event. For example, an event could offer regular, VIP, and VVIP tickets with different perks."
+      properties:
+        id:
+          type: integer
+          example: 200
+          description: "Unique identifier of the ticket type. This is globally unique, so no ticket types, even for other unrelated events, can have the same id."
+        event_id:
+          type: integer
+          example: 100
+          description: "Id of the event that this ticket type is for."
+        name:
+          type: string
+          example: "VIP"
+          description: "Name of the ticket type."
+        description:
+          type: string
+          example: "You're a superstar with this ticket. Come dance with the platypus at the after party"
+          description: "A description of the ticket type. This should be where the perks of a ticket type are listed out."
+        price:
+          type: string
+          example: "499.99"
+          description: "Price of this ticket type."
+        total_quantity:
+          type: integer
+          example: 500
+          description: "Total quantity of this ticket type available. The total quantities of all ticket types of an event is at most the total capacity of the event."
+        available_quantity:
+          type: integer
+          example: 200
+          description: "The number of available tickets left for this ticket type. a value of 0 means that it is sold out."
+        created_at:
+          type: string
+          example: "TODO"
+          description: "The date/time at which this ticket type was created."
+    participant:
+      type: object
+      description: "Represents a user who has a ticket to an event. It contains the user info and info on their owned tickets to the specific event they are a participant of."
+      properties:
+        event_id:
+          description: "id of the event that this user is a participant of."
+          example: 200
+          type: integer
+        user_id:
+          description: "id of the user (participant in this particular context)"
+          example: 100
+          type: integer
+        display_name:
+          description: "Display name of the user"
+          example: "Perry123"
+          type: string
+        full_name:
+          description: "Full name of the user"
+          example: "Perry Platypus"
+          type: string
+        gender:
+          type: string
+          enum: [m, f, o]
+          description: "The gender of the user. m = male, f = female, o = other"
+        ticket_id:
+          description: "id of the ticket instance that the user possesses."
+          example: 30
+          type: integer
+        ticket_type_id:
+          description: "id of the ticket type that the user has."
+          example: 10
+          type: integer
+        purchased_at:
+          description: "date/time when the ticket was purchased."
+          example: "TODO"
+          type: string
+        ticket_type_name:
+          description: "Name of the ticket"
+          example: "VIP"
+          type: string
+        ticket_type_price:
+          description: "Price of the ticket."
+          example: "499.99"
+          type: string
+        
+        
+    error:
+      type: object
+      description: "Response when request fails. The error field is to be used as a template message to display to users, while the messsage field is for debugging."
+      properties:
+        error:
+          type: string
+          example: "Bad request. Please try again"
+        message:
+          type: string
+          example: "Input was invalid."
+  parameters:
+    filter:
+      name: filter
+      in: query
+      description: "Set the filters to control what gets returned. See schema of object returned in successful responses. All fields of the returned object can be filtered as per the field's data type. **Default**: \"\"(no filters)"
+      required: false
+      schema:
+        type: string
+        example: "field1=value1&field2=value2"
+    sort:
+      name: sort
+      in: query
+      description: "Sorts the return values by the given field(s) and order. You can sort by multiple fields. Sort priority goes from left to right. +{field} sorts the results by the field in ascending order, -{field} is its descending equivalent.**Default**: \"\"(no sorting)"
+      required: false
+      schema:
+        type: string
+        example: "+field1&-field2"
+        
