@@ -146,7 +146,7 @@ func (s *APIServer) handleDeleteAccountById(c *gin.Context) error {
 	if err := s.store.DeleteAccountById(id); err != nil {
 		return err
 	}
-	c.Status(200)
+	c.Status(http.StatusOK)
 	return nil
 }
 
@@ -170,6 +170,7 @@ func (s *APIServer) handleGetEvent(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
+
 	c.JSON(200, events)
 	return nil
 }
@@ -220,6 +221,6 @@ func getID(c *gin.Context) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("invalid id provided: %s", idStr)
 	}
-	return id, nil
 
+	return id, nil
 }

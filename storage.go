@@ -17,6 +17,7 @@ type Storage interface {
 	GetEvent() ([]*Event, error)
 	CreateEvent(*Event) error
 	GetEventById(int) (*Event, error)
+	GetTicketsByAccountId(int) ([]*Ticket, error)
 }
 
 type PostgresStore struct {
@@ -110,6 +111,29 @@ func (s *PostgresStore) GetAccountById(id int) (*Account, error) {
 	return nil, fmt.Errorf("Account %d not found", id)
 }
 
+func (s *PostgresStore) GetTicketsByAccountId(id int) ([]*Ticket, error) {
+	query := `SELECT ticket.id, ticket.ticket_type_id, ticket.owner_id, ticket.purchased_at,
+	ticket_type.name, ticket_type.price, event.id, event.name, event.start_at, event.end_at 
+	FROM ticket 
+	join ticket_type on ticket.ticket_type_id = ticket_type.id 
+	join event on ticket_type.event_id = event.id WHERE ticket.owner_id = $1`
+	rows, err := s.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	tickets := []*Ticket{}
+	for rows.Next() {
+		ticket, err := scanIntoTicket(rows)
+		if err != nil {
+			return nil, err
+		}
+
+		tickets = append(tickets, ticket)
+	}
+	return tickets, nil
+}
+
 func (s *PostgresStore) GetEvent() ([]*Event, error) {
 	query := `SELECT id, host_id, name, description, capacity, 
 	start_at, end_at, location_name, location_address, location_city, 
@@ -192,13 +216,35 @@ func scanIntoEvent(rows *sql.Rows) (*Event, error) {
 		&event.LocationState,
 		&event.LocationCountry,
 		&event.LocationZip,
-		&event.CreatedAt)
+		&event.CreatedAt,
+	)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return event, nil
+}
+
+func scanIntoTicket(rows *sql.Rows) (*Ticket, error) {
+	ticket := new(Ticket)
+	err := rows.Scan(
+		&ticket.ID,
+		&ticket.TicketTypeID,
+		&ticket.OwnerId,
+		&ticket.PurchasedAt,
+		&ticket.TicketTypeName,
+		&ticket.TicketTypePrice,
+		&ticket.EventID,
+		&ticket.EventName,
+		&ticket.EventStartAt,
+		&ticket.EventEndAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return ticket, nil
 }
 
 func scanIntoAccount(rows *sql.Rows) (*Account, error) {
@@ -211,8 +257,8 @@ func scanIntoAccount(rows *sql.Rows) (*Account, error) {
 		&account.FullName,
 		&account.Gender,
 		&account.IsHost,
-		&account.CreatedAt)
-
+		&account.CreatedAt,
+	)
 	if err != nil {
 		return nil, err
 	}
