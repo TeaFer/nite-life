@@ -3,33 +3,33 @@ package main
 import "time"
 
 type CreateAccountRequest struct {
-	Username    string `json:"username"`
-	Password    string `json:"password"`
-	DisplayName string `json:"display_name"`
-	FullName    string `json:"full_name"`
-	Gender      byte   `json:"gender"`
-	IsHost      bool   `json:"is_host"`
+	Username    string `json:"username" binding:"required"`
+	Password    string `json:"password" binding:"required"`
+	DisplayName string `json:"display_name" binding:"required"`
+	FullName    string `json:"full_name" binding:"required"`
+	Gender      byte   `json:"gender" binding:"required"`
+	IsHost      bool   `json:"is_host" binding:"required"`
 }
 
 type CreateEventRequest struct {
-	HostID          int       `json:"host_id"`
-	Name            string    `json:"name"`
-	Description     string    `json:"description"`
-	Capacity        int       `json:"capacity"`
-	StartAt         time.Time `json:"start_at"`
-	EndAt           time.Time `json:"end_at"`
-	LocationName    string    `json:"location_name"`
-	LocationAddress string    `json:"location_address"`
-	LocationCity    string    `json:"location_city"`
-	LocationState   string    `json:"location_state"`
-	LocationCountry string    `json:"location_country"`
-	LocationZip     string    `json:"location_zip"`
+	HostID          int       `json:"host_id" binding:"required"`
+	Name            string    `json:"name" binding:"required"`
+	Description     string    `json:"description" binding:"required"`
+	Capacity        int       `json:"capacity" binding:"required"`
+	StartAt         time.Time `json:"start_at" binding:"required"`
+	EndAt           time.Time `json:"end_at" binding:"required"`
+	LocationName    string    `json:"location_name" binding:"required"`
+	LocationAddress string    `json:"location_address" binding:"required"`
+	LocationCity    string    `json:"location_city" binding:"required"`
+	LocationState   string    `json:"location_state" binding:"required"`
+	LocationCountry string    `json:"location_country" binding:"required"`
+	LocationZip     string    `json:"location_zip" binding:"required"`
 }
 
 type Account struct {
 	ID          int       `json:"id"`
 	Username    string    `json:"username"`
-	Password    string    `json:"password"`
+	Password    string    `json:"-"`
 	DisplayName string    `json:"display_name"`
 	FullName    string    `json:"full_name"`
 	Gender      byte      `json:"gender"`

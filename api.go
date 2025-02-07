@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
+	"github.com/TeaFer/nite-life/auth"
+
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 type APIServer struct {
@@ -32,28 +36,16 @@ func (s *APIServer) Run() {
 	router := gin.Default()
 
 	router.Any("/accounts", makeHandlerFunc(s.handleAccount))
-	router.Any("/accounts/:id", makeHandlerFunc(s.handleAccountById))
-	router.Any("/accounts/:id/tickets", makeHandlerFunc(s.handleGetTicketsByAccountId))
+	router.Any("/accounts/:id", makeHandlerFuncMiddleware(s.handleProtectedResource),
+		makeHandlerFunc(s.handleAccountById))
+	router.Any("/accounts/:id/tickets", makeHandlerFuncMiddleware(s.handleProtectedResource),
+		makeHandlerFunc(s.handleGetTicketsByAccountId))
 
 	router.Any("/events", makeHandlerFunc(s.handleEvent))
 	router.Any("/events/:id", makeHandlerFunc(s.handleEventById))
 
 	log.Println("JSON API server running on port:", s.listenAddr)
 	router.Run(s.listenAddr)
-}
-
-func makeHandlerFunc(f apiFunc) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		err := f(c)
-		if err != nil {
-			c.Error(err)
-			c.JSON(http.StatusBadRequest,
-				apiError{
-					Error:   "Bad request. Please try again.",
-					Message: err.Error(),
-				})
-		}
-	}
 }
 
 func (s *APIServer) handleAccount(c *gin.Context) error {
@@ -223,4 +215,70 @@ func getID(c *gin.Context) (int, error) {
 	}
 
 	return id, nil
+}
+
+func makeHandlerFunc(f apiFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := f(c)
+		if err != nil {
+			c.Error(err)
+			c.JSON(http.StatusBadRequest,
+				apiError{
+					Error:   "Bad request. Please try again.",
+					Message: err.Error(),
+				})
+		}
+	}
+}
+
+func makeHandlerFuncMiddleware(f apiFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := f(c)
+		if err != nil {
+			c.Error(err)
+			c.JSON(http.StatusBadRequest,
+				apiError{
+					Error:   "Bad request. Please try again.",
+					Message: err.Error(),
+				})
+			c.Abort()
+		}
+		c.Next()
+	}
+}
+
+func (s *APIServer) handleProtectedResource(c *gin.Context) error {
+	tokenString := c.GetHeader("Authorization")
+	if tokenString == "" {
+		return fmt.Errorf("authorization token is missing")
+	}
+
+	err := godotenv.Load()
+	if err != nil {
+		return err
+	}
+	jwtKey := []byte(os.Getenv("JWT_KEY"))
+
+	claims, err := auth.ValidateJWT(tokenString, jwtKey)
+	if err != nil {
+		return err
+	}
+	resourceId, err := getID(c)
+	if err != nil {
+		return err
+	}
+
+	if err := s.checkClaims(claims, resourceId); err != nil {
+		return err
+	}
+
+	c.Set("claims", claims)
+	return nil
+}
+
+func (s *APIServer) checkClaims(claims *auth.Claims, resourceId int) error {
+	if claims.ID == 0 || claims.ID != resourceId {
+		return fmt.Errorf("you are unauthorized to make this request")
+	}
+	return nil
 }
