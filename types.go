@@ -68,16 +68,24 @@ type TicketType struct {
 type Ticket struct {
 	ID              int       `json:"id"`
 	TicketTypeID    int       `json:"ticket_type_id"`
+<<<<<<< HEAD
 	OwnerId         int       `json:"owner_id"`
 	PurchasedAt     time.Time `json:"purchased_at"`
 	TicketTypeName  string    `json:"ticket_type_name"`
 	TicketTypePrice float32   `json:"ticket_type_price"`
+=======
+	OwnerID         int       `json:"owner_id"`
+	PurchasedAt     time.Time `json:"purchased_at"`
+	TicketTypeName  string    `json:"ticket_type_name"`
+	TicketTypePrice float64   `json:"ticket_type_price"`
+>>>>>>> 0e71844 (add ticket type)
 	EventID         int       `json:"event_id"`
 	EventName       string    `json:"event_name"`
 	EventStartAt    time.Time `json:"event_start_at"`
 	EventEndAt      time.Time `json:"event_end_at"`
 }
 
+<<<<<<< HEAD
 // Participant represents a user who is attending an event. It contains
 // information of the user, the event, and the ticket they purchased to
 // attend the event.
@@ -114,6 +122,8 @@ func NewEvent(hostId int, name string, description string, capacity int, startAt
 	}
 }
 
+=======
+>>>>>>> 0e71844 (add ticket type)
 func NewAccount(username string, password string, displayName string,
 	fullName string, gender byte, isHost bool) *Account {
 	return &Account{
