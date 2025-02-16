@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
+	"strings"
 
 	_ "github.com/lib/pq"
 )
@@ -264,4 +266,39 @@ func scanIntoAccount(rows *sql.Rows) (*Account, error) {
 	}
 
 	return account, nil
+}
+
+func (s PostgresStore) addFilters(query string, filters string) (string, []interface{}, error) {
+	if len(filters) == 0 {
+		return query, nil, nil
+	}
+
+	// parse filter query parameter string to a map with fields as keys and filter values as values
+	params, err := url.ParseQuery(filters)
+	if err != nil {
+		return query, nil, fmt.Errorf("failed to parse filter: %v", err)
+	}
+
+	// construct the where clause of the query based on the filters
+	var conditions []string
+	var values []interface{}
+	i := 1
+	for field, val := range params {
+		conditions = append(conditions, fmt.Sprintf("%s = $%d", field, i))
+		values = append(values, val[0])
+		i++
+	}
+
+	// append the where clause and conditions to the base query
+	query += " WHERE "
+	query += strings.Join(conditions, " AND ")
+
+	return query, values, nil
+}
+
+func (s PostgresStore) addSorts(query string, sorts string) (string, error) {
+	if len(sorts) == 0 {
+		return query, nil
+	}
+
 }
